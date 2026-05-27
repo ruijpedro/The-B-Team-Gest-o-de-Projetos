@@ -1,0 +1,9 @@
+
+body{margin:0;background:#050505;color:white;font-family:Arial}
+.app{display:flex;min-height:100vh}
+.sidebar{width:280px;background:#0d0d0d;padding:30px}
+.sidebar h1{color:#ff1e1e}
+.content{flex:1;padding:40px}
+.cards{display:flex;gap:20px}
+.card{background:#111;padding:30px;border-radius:20px}
+.card span{font-size:48px;color:#ff1e1e}
