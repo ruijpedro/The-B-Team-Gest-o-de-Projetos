@@ -34,7 +34,9 @@ jobs:
 
       - name: Install Capacitor
         run: |
-          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          npm install @capacitor/core@6
+          npm install @capacitor/cli@6
+          npm install @capacitor/android@6
 
       - name: Create Capacitor config
         run: |
@@ -52,7 +54,7 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Fix Android Gradle variables and Kotlin versions
+      - name: Fix Android variables
         run: |
           cat > android/variables.gradle <<'EOF'
           ext {
@@ -73,9 +75,10 @@ jobs:
           }
           EOF
 
+      - name: Fix Kotlin and Gradle
+        run: |
           cat > android/build.gradle <<'EOF'
           buildscript {
-              apply from: "variables.gradle"
 
               repositories {
                   google()
@@ -107,6 +110,11 @@ jobs:
               delete rootProject.buildDir
           }
           EOF
+
+      - name: Force Gradle 8.9
+        run: |
+          sed -i 's/gradle-8.2.1-all.zip/gradle-8.9-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
+          cat android/gradle/wrapper/gradle-wrapper.properties
 
       - name: Build debug APK
         run: |
