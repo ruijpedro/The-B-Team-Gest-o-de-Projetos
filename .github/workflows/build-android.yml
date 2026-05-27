@@ -8,13 +8,14 @@ on:
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -28,36 +29,53 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build web
+      - name: Build web app
         run: npm run build
 
       - name: Install Capacitor
         run: |
-          npm install @capacitor/core@6
-          npm install @capacitor/cli@6
-          npm install @capacitor/android@6
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
 
-      - name: Create capacitor config
+      - name: Create Capacitor config
         run: |
-          echo '{
-            "appId":"com.rjp.thebteam",
-            "appName":"The B Team",
-            "webDir":"dist"
-          }' > capacitor.config.json
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.rjp.thebteam",
+            "appName": "The B Team",
+            "webDir": "dist"
+          }
+          EOF
 
-      - name: Add Android
+      - name: Create clean Android project
         run: |
+          rm -rf android
           npx cap add android
           npx cap sync android
 
-      - name: Force Kotlin version
+      - name: Fix Android Gradle variables and Kotlin versions
         run: |
-          echo "" >> android/gradle.properties
-          echo "kotlin.code.style=official" >> android/gradle.properties
+          cat > android/variables.gradle <<'EOF'
+          ext {
+              minSdkVersion = 23
+              compileSdkVersion = 35
+              targetSdkVersion = 35
+              androidxActivityVersion = '1.9.2'
+              androidxAppCompatVersion = '1.7.0'
+              androidxCoordinatorLayoutVersion = '1.2.0'
+              androidxCoreVersion = '1.15.0'
+              androidxFragmentVersion = '1.8.4'
+              coreSplashScreenVersion = '1.0.1'
+              androidxWebkitVersion = '1.12.1'
+              junitVersion = '4.13.2'
+              androidxJunitVersion = '1.2.1'
+              androidxEspressoCoreVersion = '3.6.1'
+              cordovaAndroidVersion = '10.1.1'
+          }
+          EOF
 
           cat > android/build.gradle <<'EOF'
           buildscript {
-              ext.kotlin_version = '1.9.24'
+              apply from: "variables.gradle"
 
               repositories {
                   google()
@@ -65,8 +83,8 @@ jobs:
               }
 
               dependencies {
-                  classpath 'com.android.tools.build:gradle:8.2.2'
-                  classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+                  classpath 'com.android.tools.build:gradle:8.7.2'
+                  classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24'
               }
           }
 
@@ -84,16 +102,20 @@ jobs:
                   }
               }
           }
+
+          task clean(type: Delete) {
+              delete rootProject.buildDir
+          }
           EOF
 
-      - name: Build APK
+      - name: Build debug APK
         run: |
           cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: The_B_Team_APK
+          name: The_B_Team_debug_APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
