@@ -1,14 +1,15 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
 android {
-    namespace "com.rjp.thebteam"
-
-    compileSdk 35
+    namespace 'com.rjp.bteam'
+    compileSdk 34
 
     defaultConfig {
-        applicationId "com.rjp.thebteam"
-        minSdk 23
-        targetSdk 35
+        applicationId "com.rjp.bteam"
+        minSdk 24
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
@@ -18,8 +19,12 @@ android {
             minifyEnabled false
         }
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.7.0'
 }
